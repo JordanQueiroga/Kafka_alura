@@ -22,7 +22,7 @@
 
 <h5>DESCREVER OS TOPICOS:</h5>
 ```
-.\bin\windows\kafka-consumer-groups.bat --describe --groups --bootstrap-server localhost:9092 
+.\bin\windows\kafka-consumer-groups.bat --describe --all-groups --bootstrap-server localhost:9092 
 ```
 
 <h5>VERIFICA A SITUAÇÃO DOS TOPICOS:</h5>

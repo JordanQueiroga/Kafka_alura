@@ -12,10 +12,9 @@ public class FraudDetectorService {
 
     public static void main(String[] args) throws InterruptedException {
         var fraudDetectorService = new FraudDetectorService();
-        try (var service = new KafkaService<>(FraudDetectorService.class.getName(),
+        try (var service = new KafkaService(FraudDetectorService.class.getName(),
                 "ECOMMERCE_NEW_ORDER",
                 fraudDetectorService::parse,
-                Order.class,
                 Map.of())
         ) {
             service.run();
@@ -24,19 +23,24 @@ public class FraudDetectorService {
 
     private final KafkaDispatcher<Order> orderDispatcher = new KafkaDispatcher<>();
 
-    private void parse(ConsumerRecord<String, Order> record) throws ExecutionException, InterruptedException {
+    private void parse(ConsumerRecord<String, Message<Order>> record) throws ExecutionException, InterruptedException {
         System.out.println("Process new order, checking for fraud");
         System.out.println(record.key());
         System.out.println(record.value());
         System.out.println(record.partition());
         System.out.println(record.offset());
 
-        if (isFraoud(record.value())) {
+        if (isFraoud(record.value().getPayload())) {
             System.out.println("Order is a fraud!!!");
-            orderDispatcher.send("ECOMMERCE_ORDER_REJECTED", record.value().getEmail(), record.value());
+            orderDispatcher.send("ECOMMERCE_ORDER_REJECTED",
+                    record.value().getPayload().getEmail(),
+                    record.value().getCorrelationId().continueWith(FraudDetectorService.class.getSimpleName()),
+                    record.value().getPayload());
         } else {
             System.out.println("Oder approved");
-            orderDispatcher.send("ECOMMERCE_ORDER_APPROVED", record.value().getEmail(), record.value());
+            orderDispatcher.send("ECOMMERCE_ORDER_APPROVED", record.value().getPayload().getEmail(),
+                    record.value().getCorrelationId().continueWith(FraudDetectorService.class.getSimpleName()),
+                    record.value().getPayload());
         }
 
         try {

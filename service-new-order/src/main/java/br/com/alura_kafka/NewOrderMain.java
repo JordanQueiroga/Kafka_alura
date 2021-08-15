@@ -23,8 +23,8 @@ public class NewOrderMain {
 
                     var sendEmailValue = "Thank for your order!";
 
-                    orderDispatcher.send("ECOMMERCE_NEW_ORDER", email, order);
-                    emailDispatcher.send("ECOMMERCE_SEND_EMAIL", email, sendEmailValue);
+                    orderDispatcher.send("ECOMMERCE_NEW_ORDER", email, new CorrelationId(NewOrderMain.class.getSimpleName()), order);
+                    emailDispatcher.send("ECOMMERCE_SEND_EMAIL", email, new CorrelationId(NewOrderMain.class.getSimpleName()), sendEmailValue);
                 }
             }
         }

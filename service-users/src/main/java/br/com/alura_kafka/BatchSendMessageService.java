@@ -14,7 +14,6 @@ import java.util.concurrent.ExecutionException;
 public class BatchSendMessageService {
 
     private final Connection connection;
-    private final KafkaDispatcher userDispatcher = new KafkaDispatcher<User>();
 
     BatchSendMessageService() throws SQLException {
         String url = "jdbc:sqlite:target/users_database.db";
@@ -28,32 +27,31 @@ public class BatchSendMessageService {
 
     public static void main(String[] args) throws InterruptedException, SQLException {
         var batchService = new BatchSendMessageService();
-        try (var service = new KafkaService<>(BatchSendMessageService.class.getName(),
-                "SEND_MESSAGE_TO_ALL_USERS",
+        try (var service = new KafkaService(BatchSendMessageService.class.getName(),
+                "ECOMMERCE_SEND_MESSAGE_TO_ALL_USERS",
                 batchService::parse,
-                String.class,
                 Map.of())
         ) {
             service.run();
         }
     }
 
-    private final KafkaDispatcher<Order> orderDispatcher = new KafkaDispatcher<>();
+    private final KafkaDispatcher userDispatcher = new KafkaDispatcher<User>();
 
-    private void parse(ConsumerRecord<String, String> record) throws SQLException, ExecutionException, InterruptedException {
+    private void parse(ConsumerRecord<String, Message<String>> record) throws SQLException, ExecutionException, InterruptedException {
         System.out.println("--------------------------");
         System.out.println("Process new batch");
-        System.out.println("Topic: "+record.value());
-
+        System.out.println("Topic: " + record.value());
+        var payload = record.value().getPayload();
         for (User user : getAllUsers()) {
-            userDispatcher.send(record.value(), user.getUuid(), user);
+            userDispatcher.send(payload, user.getUuid(),record.value().getCorrelationId().continueWith(BatchSendMessageService.class.getSimpleName()), user);
         }
     }
 
     private List<User> getAllUsers() throws SQLException {
         ResultSet results = connection.prepareStatement("select uuid from Users").executeQuery();
         List<User> users = new ArrayList<>();
-        while (results.next()){
+        while (results.next()) {
             users.add(new User(results.getString(1)));
         }
         return users;

@@ -24,19 +24,16 @@ public class CreateUserService {
 
     public static void main(String[] args) throws InterruptedException, SQLException {
         var createUserService = new CreateUserService();
-        try (var service = new KafkaService<>(CreateUserService.class.getName(),
+        try (var service = new KafkaService(CreateUserService.class.getName(),
                 "ECOMMERCE_NEW_ORDER",
                 createUserService::parse,
-                Order.class,
                 Map.of())
         ) {
             service.run();
         }
     }
 
-    private final KafkaDispatcher<Order> orderDispatcher = new KafkaDispatcher<>();
-
-    private void parse(ConsumerRecord<String, Order> record) throws SQLException {
+    private void parse(ConsumerRecord<String, Message<Order>> record) throws SQLException {
         System.out.println("Process create user");
         System.out.println(record.key());
         System.out.println(record.value());
@@ -44,8 +41,8 @@ public class CreateUserService {
         System.out.println(record.offset());
 
         var order = record.value();
-        if (isNewUser(order.getEmail())) {
-            insertNewUser(order.getEmail());
+        if (isNewUser(order.getPayload().getEmail())) {
+            insertNewUser(order.getPayload().getEmail());
             System.out.println("User created");
         } else {
             System.out.println("User already exist");

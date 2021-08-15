@@ -13,7 +13,7 @@ import java.util.concurrent.ExecutionException;
 
 @Slf4j
 public class KafkaDispatcher<T> implements Closeable {
-    KafkaProducer<String, T> producer;
+    KafkaProducer<String, Message<T>> producer;
 
     public KafkaDispatcher() {
         this.producer = new KafkaProducer<>(properties());
@@ -32,8 +32,9 @@ public class KafkaDispatcher<T> implements Closeable {
         return properties;
     }
 
-    public void send(String topicName, String key, T value) throws ExecutionException, InterruptedException {
-        ProducerRecord<String, T> record = new ProducerRecord(topicName, key, value);
+    public void send(String topicName, String key,CorrelationId id, T payload) throws ExecutionException, InterruptedException {
+        Message<T> value = new Message<>(id, payload);
+        ProducerRecord<String, Message<T>> record = new ProducerRecord(topicName, key, value);
 
         Callback callback = (data, ex) -> {
             if (ex != null) {

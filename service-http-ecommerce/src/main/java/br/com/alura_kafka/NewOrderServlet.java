@@ -35,8 +35,8 @@ public class NewOrderServlet extends HttpServlet {
 
             var sendEmailValue = "Thank for your order!";
 
-            orderDispatcher.send("ECOMMERCE_NEW_ORDER", email, order);
-            emailDispatcher.send("ECOMMERCE_SEND_EMAIL", email, sendEmailValue);
+            orderDispatcher.send("ECOMMERCE_NEW_ORDER", email, new CorrelationId(NewOrderServlet.class.getSimpleName()), order);
+            emailDispatcher.send("ECOMMERCE_SEND_EMAIL", email, new CorrelationId(NewOrderServlet.class.getSimpleName()), sendEmailValue);
             log.info("new order send");
 
             resp.setStatus(HttpServletResponse.SC_OK);

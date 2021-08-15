@@ -16,13 +16,12 @@ public class LogService {
         try (var service = new KafkaService(LogService.class.getName(),
                 Pattern.compile("ECOMMERCE.*"),
                 logService::parse,
-                String.class,
                 Map.of(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName()))) {
             service.run();
         }
     }
 
-    private void parse(ConsumerRecord<String, String> record) {
+    private void parse(ConsumerRecord<String, Message<String>> record) {
         System.out.println("LOG: " + record.topic());
         System.out.println("key: " + record.key());
         System.out.println("value: " + record.value());
