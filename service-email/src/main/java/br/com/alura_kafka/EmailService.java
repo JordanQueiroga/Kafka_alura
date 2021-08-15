@@ -4,11 +4,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 @Slf4j
 public class EmailService {
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException, ExecutionException {
         var emailService = new EmailService();
         try (var service = new KafkaService(EmailService.class.getName(),
                 "ECOMMERCE_SEND_EMAIL",

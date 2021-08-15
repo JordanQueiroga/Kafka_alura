@@ -3,6 +3,7 @@ package br.com.alura_kafka;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
@@ -12,6 +13,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
@@ -33,19 +35,30 @@ class KafkaService<T> implements Closeable {
     }
 
     private KafkaService(ConsumerFunction<T> parse, String groupId, Map<String, String> properties) {
-        this.consumer = new KafkaConsumer<>(getProperties(groupId, properties));
+        this.consumer = new KafkaConsumer(getProperties(groupId, properties));
         this.parse = parse;
     }
 
-    void run() throws InterruptedException {
-        while (true) {
-            var records = consumer.poll(Duration.ofMillis(100));
-            if (!records.isEmpty()) {
-                for (ConsumerRecord record : records) {
-                    try {
-                        parse.consume(record);
-                    } catch (Exception e) {
-                        log.info("Error when send message!", e);
+    void run() throws ExecutionException, InterruptedException {
+        try (var deadLetter = new KafkaDispatcher()) {
+
+            while (true) {
+                ConsumerRecords<String, Message<T>> records = consumer.poll(Duration.ofMillis(100));
+                if (!records.isEmpty()) {
+                    for (ConsumerRecord record : records) {
+                        try {
+                           if(true) throw new RuntimeException("deu erro");
+
+                            parse.consume(record);
+                        } catch (Exception e) {
+                            log.info("Error when send message!", e);
+                            e.printStackTrace();
+                            var message = (Message<T>) record.value();
+                            deadLetter.send("ECOMMERCE_DEADLETTER",
+                                    message.getCorrelationId().toString(),
+                                    message.getCorrelationId().continueWith("DeadLetter"),
+                                    new GsonSerializer().serialize("", message.toString()));
+                        }
                     }
                 }
             }

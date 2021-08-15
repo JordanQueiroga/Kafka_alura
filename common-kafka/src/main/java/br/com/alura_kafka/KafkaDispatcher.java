@@ -1,15 +1,13 @@
 package br.com.alura_kafka;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.producer.Callback;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.io.Closeable;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 @Slf4j
 public class KafkaDispatcher<T> implements Closeable {
@@ -44,6 +42,21 @@ public class KafkaDispatcher<T> implements Closeable {
             log.info("sucesso... nome= {} ::: partition={}/ offset= {}", data.topic(), data.partition(), data.offset());
         };
         producer.send(record, callback).get();
+    }
+
+    public Future<RecordMetadata> sendAsync(String topicName, String key, CorrelationId id, T payload){
+        Message<T> value = new Message<>(id, payload);
+        ProducerRecord<String, Message<T>> record = new ProducerRecord(topicName, key, value);
+
+        Callback callback = (data, ex) -> {
+            if (ex != null) {
+                ex.printStackTrace();
+                return;
+            }
+            log.info("sucesso... nome= {} ::: partition={}/ offset= {}", data.topic(), data.partition(), data.offset());
+        };
+
+        return producer.send(record, callback);
     }
 
     @Override

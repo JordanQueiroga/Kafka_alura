@@ -10,7 +10,7 @@ import java.util.concurrent.ExecutionException;
 @Slf4j
 public class FraudDetectorService {
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException, ExecutionException {
         var fraudDetectorService = new FraudDetectorService();
         try (var service = new KafkaService(FraudDetectorService.class.getName(),
                 "ECOMMERCE_NEW_ORDER",

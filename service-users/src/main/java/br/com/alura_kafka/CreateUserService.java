@@ -7,6 +7,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 public class CreateUserService {
 
@@ -22,7 +23,7 @@ public class CreateUserService {
         }
     }
 
-    public static void main(String[] args) throws InterruptedException, SQLException {
+    public static void main(String[] args) throws InterruptedException, SQLException, ExecutionException {
         var createUserService = new CreateUserService();
         try (var service = new KafkaService(CreateUserService.class.getName(),
                 "ECOMMERCE_NEW_ORDER",

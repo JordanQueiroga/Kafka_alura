@@ -25,7 +25,7 @@ public class BatchSendMessageService {
         }
     }
 
-    public static void main(String[] args) throws InterruptedException, SQLException {
+    public static void main(String[] args) throws InterruptedException, SQLException, ExecutionException {
         var batchService = new BatchSendMessageService();
         try (var service = new KafkaService(BatchSendMessageService.class.getName(),
                 "ECOMMERCE_SEND_MESSAGE_TO_ALL_USERS",
@@ -44,7 +44,8 @@ public class BatchSendMessageService {
         System.out.println("Topic: " + record.value());
         var payload = record.value().getPayload();
         for (User user : getAllUsers()) {
-            userDispatcher.send(payload, user.getUuid(),record.value().getCorrelationId().continueWith(BatchSendMessageService.class.getSimpleName()), user);
+            userDispatcher.sendAsync(payload, user.getUuid(), record.value().getCorrelationId().continueWith(BatchSendMessageService.class.getSimpleName()), user);
+            System.out.println("Enviei para o " + user);
         }
     }
 

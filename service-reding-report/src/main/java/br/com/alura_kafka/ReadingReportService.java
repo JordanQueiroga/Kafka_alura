@@ -7,13 +7,14 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 @Slf4j
 public class ReadingReportService {
 
     private final Path SOURCE = new File("src/main/resources/report.txt").toPath();
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException, ExecutionException {
         var reportService = new ReadingReportService();
         try (var service = new KafkaService(ReadingReportService.class.getName(),
                 "ECOMMERCE_USER_GENERATE_READING_REPORT",
