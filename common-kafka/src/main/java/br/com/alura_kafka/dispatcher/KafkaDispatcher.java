@@ -1,5 +1,7 @@
-package br.com.alura_kafka;
+package br.com.alura_kafka.dispatcher;
 
+import br.com.alura_kafka.CorrelationId;
+import br.com.alura_kafka.Message;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -30,22 +32,12 @@ public class KafkaDispatcher<T> implements Closeable {
         return properties;
     }
 
-    public void send(String topicName, String key,CorrelationId id, T payload) throws ExecutionException, InterruptedException {
-        Message<T> value = new Message<>(id, payload);
-        ProducerRecord<String, Message<T>> record = new ProducerRecord(topicName, key, value);
-
-        Callback callback = (data, ex) -> {
-            if (ex != null) {
-                ex.printStackTrace();
-                return;
-            }
-            log.info("sucesso... nome= {} ::: partition={}/ offset= {}", data.topic(), data.partition(), data.offset());
-        };
-        producer.send(record, callback).get();
+    public void send(String topicName, String key, CorrelationId id, T payload) throws ExecutionException, InterruptedException {
+        sendAsync(topicName, key, id, payload).get();
     }
 
-    public Future<RecordMetadata> sendAsync(String topicName, String key, CorrelationId id, T payload){
-        Message<T> value = new Message<>(id, payload);
+    public Future<RecordMetadata> sendAsync(String topicName, String key, CorrelationId id, T payload) {
+        Message<T> value = new Message<>(id.continueWith("_" + topicName), payload);
         ProducerRecord<String, Message<T>> record = new ProducerRecord(topicName, key, value);
 
         Callback callback = (data, ex) -> {

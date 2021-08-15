@@ -1,5 +1,8 @@
-package br.com.alura_kafka;
+package br.com.alura_kafka.consumer;
 
+import br.com.alura_kafka.Message;
+import br.com.alura_kafka.dispatcher.GsonSerializer;
+import br.com.alura_kafka.dispatcher.KafkaDispatcher;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -18,7 +21,7 @@ import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 @Slf4j
-class KafkaService<T> implements Closeable {
+public class KafkaService<T> implements Closeable {
     private final KafkaConsumer<String, Message<T>> consumer;
     private ConsumerFunction parse;
 
@@ -39,7 +42,7 @@ class KafkaService<T> implements Closeable {
         this.parse = parse;
     }
 
-    void run() throws ExecutionException, InterruptedException {
+   public void run() throws ExecutionException, InterruptedException {
         try (var deadLetter = new KafkaDispatcher()) {
 
             while (true) {

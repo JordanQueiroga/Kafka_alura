@@ -1,5 +1,6 @@
 package br.com.alura_kafka;
 
+import br.com.alura_kafka.dispatcher.KafkaDispatcher;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
@@ -11,21 +12,19 @@ public class NewOrderMain {
 
     public static void main(String[] args) throws ExecutionException, InterruptedException {
         try (KafkaDispatcher orderDispatcher = new KafkaDispatcher<Order>()) {
-            try (KafkaDispatcher emailDispatcher = new KafkaDispatcher<String>()) {
+            for (int i = 0; i < 10; i++) {
 
-                for (int i = 0; i < 10; i++) {
+                String orderId = UUID.randomUUID().toString();
+                BigDecimal amount = new BigDecimal(Math.random() * 5000 + 1);
+                String email = Math.random() + "@email.com";
 
-                    String orderId = UUID.randomUUID().toString();
-                    BigDecimal amount = new BigDecimal(Math.random() * 5000 + 1);
-                    String email = Math.random() + "@email.com";
+                Order order = new Order(orderId, amount, email);
 
-                    Order order = new Order(orderId, amount, email);
+                var sendEmailValue = "Thank for your order!";
 
-                    var sendEmailValue = "Thank for your order!";
+                var id = new CorrelationId(NewOrderMain.class.getSimpleName());
 
-                    orderDispatcher.send("ECOMMERCE_NEW_ORDER", email, new CorrelationId(NewOrderMain.class.getSimpleName()), order);
-                    emailDispatcher.send("ECOMMERCE_SEND_EMAIL", email, new CorrelationId(NewOrderMain.class.getSimpleName()), sendEmailValue);
-                }
+                orderDispatcher.send("ECOMMERCE_NEW_ORDER", email, id, order);
             }
         }
 

@@ -1,5 +1,6 @@
 package br.com.alura_kafka;
 
+import br.com.alura_kafka.consumer.KafkaService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 import java.sql.Connection;

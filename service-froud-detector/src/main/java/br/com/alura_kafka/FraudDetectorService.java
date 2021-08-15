@@ -1,5 +1,7 @@
 package br.com.alura_kafka;
 
+import br.com.alura_kafka.consumer.KafkaService;
+import br.com.alura_kafka.dispatcher.KafkaDispatcher;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
