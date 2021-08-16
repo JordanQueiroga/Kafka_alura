@@ -5,7 +5,6 @@ import br.com.alura_kafka.dispatcher.KafkaDispatcher;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
-import java.math.BigDecimal;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
