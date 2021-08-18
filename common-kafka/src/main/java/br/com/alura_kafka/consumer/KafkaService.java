@@ -50,8 +50,6 @@ public class KafkaService<T> implements Closeable {
                 if (!records.isEmpty()) {
                     for (ConsumerRecord record : records) {
                         try {
-                           if(true) throw new RuntimeException("deu erro");
-
                             parse.consume(record);
                         } catch (Exception e) {
                             log.info("Error when send message!", e);
@@ -76,6 +74,8 @@ public class KafkaService<T> implements Closeable {
         properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         properties.setProperty(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, "1");
         properties.setProperty(ConsumerConfig.CLIENT_ID_CONFIG, UUID.randomUUID().toString());
+        //properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+        properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         properties.putAll(overrideProperties);
 
         return properties;
